@@ -2,6 +2,7 @@
 function generateMockData() {
     // Mock attendee names mapping
     const attendeeNames = {
+        'demo@example.com': 'Demo User',
         'john@example.com': 'John Smith',
         'jane@example.com': 'Jane Doe',
         'bob@example.com': 'Bob Johnson',
@@ -28,6 +29,24 @@ function generateMockData() {
     console.log('Mock data dates:', dates);
 
     return {
+        'demo@example.com': [
+            {
+                start: dates[1] + 'T09:00:00Z',
+                end: dates[1] + 'T10:00:00Z',
+                summary: 'Morning Standup'
+            },
+            {
+                start: dates[2] + 'T15:00:00Z',
+                end: dates[2] + 'T16:00:00Z',
+                summary: 'Demo Preparation'
+            },
+            {
+                start: dates[3] + 'T11:00:00Z',
+                end: dates[3] + 'T12:00:00Z',
+                summary: 'Product Review'
+            }
+        ],
+
         'john@example.com': [
             {
                 start: dates[1] + 'T10:00:00Z',

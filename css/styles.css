@@ -87,6 +87,25 @@ body {
     min-height: 100px;
 }
 
+.checkbox-group {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.checkbox-group label {
+    margin: 0;
+    font-weight: normal;
+    color: #666;
+    cursor: pointer;
+}
+
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;

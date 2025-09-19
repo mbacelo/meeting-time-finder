@@ -221,14 +221,17 @@ class MeetingTimeFinder {
 
         if (this.environment === 'local') {
             userInfo.textContent = '👤 Demo User';
+            this.currentUserEmail = 'demo@example.com';
         } else {
             google.script.run
                 .withSuccessHandler((userEmail) => {
                     const userName = userEmail.split('@')[0];
                     userInfo.textContent = `👤 ${userName}`;
+                    this.currentUserEmail = userEmail;
                 })
                 .withFailureHandler(() => {
                     userInfo.textContent = '👤 Signed In';
+                    this.currentUserEmail = null;
                 })
                 .getCurrentUserEmail();
         }
@@ -271,7 +274,14 @@ class MeetingTimeFinder {
         endDate.setDate(startDate.getDate() + daysForward);
 
         const attendeesInput = document.getElementById('attendees').value;
-        const attendees = this.parseAttendees(attendeesInput);
+        let attendees = this.parseAttendees(attendeesInput);
+
+        const includeSelf = document.getElementById('include-self').checked;
+        if (includeSelf && this.currentUserEmail) {
+            if (!attendees.includes(this.currentUserEmail)) {
+                attendees.push(this.currentUserEmail);
+            }
+        }
 
         return {
             attendees,
