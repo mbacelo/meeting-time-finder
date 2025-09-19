@@ -1,28 +1,21 @@
-# Google Calendar Meeting Time Finder
+# Meeting Time Finder
 
 A web application that suggests optimal meeting times by checking attendees' Google Calendar availability.
 
 ## Features
 
-- **Google Sign-In**: Authenticate with Google to access calendar data
-- **Smart Scheduling**: Find optimal meeting times based on attendee availability
-- **Flexible Time Windows**: Configure daily working hours (9 AM - 6 PM in 30-min intervals)
-- **Multiple Duration Options**: Support for 15 min, 30 min, 1 hour, 1.5 hours, and 2 hours meetings
-- **Availability Ranking**: Results sorted by availability percentage and chronological order
-- **Local Testing**: Mock data support for development and testing
+- Google Sign-In authentication
+- Smart scheduling based on availability
+- Configurable time windows (9 AM - 6 PM)
+- Multiple durations (15 min - 2 hours)
+- Availability ranking
+- Local testing with mock data
 
-## Project Structure
+## Files
 
-```
-meeting-time-finder/
-├── css/
-│   └── styles.css          # Stylesheet
-├── js/
-│   ├── app.js              # Main application entry point
-│   └── mockData.js         # Sample calendar data for local testing
-├── docs/
-│   ├── README.md           # This file
-│   └── DEPLOYMENT_GUIDE.md # Google Apps Script deployment instructions
-├── index.html              # User interface with modern responsive design
-└── code.gs                 # Google Apps Script backend code
-```
+- `index.html` - UI
+- `code.gs` - Google Apps Script backend
+- `js/app.js` - Main application
+- `js/main.js` - Module loader
+- `js/mock.js` - Local testing data
+- `css/styles.css` - Styling
