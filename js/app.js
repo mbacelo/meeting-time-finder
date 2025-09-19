@@ -1,10 +1,25 @@
+/**
+ * Main application class for the Meeting Time Finder
+ */
 class MeetingTimeFinder {
     constructor() {
         this.environment = this.detectEnvironment();
-        this.isSignedIn = this.environment === 'gas';
+        this.isSignedIn = this.environment === 'local' || this.environment === 'gas';
         this.currentResults = [];
         this.sortState = { column: 'percentage', direction: 'desc' };
         this.initializeApp();
+    }
+
+    async initializeMockService() {
+        if (this.environment === 'local') {
+            try {
+                const { default: MockService } = await import('./mock.js');
+                this.mockService = new MockService();
+            } catch (error) {
+                console.error('Failed to load mock service:', error);
+                this.mockService = null;
+            }
+        }
     }
 
     detectEnvironment() {
@@ -20,16 +35,23 @@ class MeetingTimeFinder {
         return 'local';
     }
 
-    initializeApp() {
-        console.log('App initializing in', this.environment, 'mode');
+    async initializeApp() {
+        try {
+            console.log('App initializing in', this.environment, 'mode');
 
-        this.bindEvents();
-        this.setDefaultDates();
+            this.bindEvents();
+            this.setDefaultDates();
 
-        if (this.environment === 'local') {
-            this.simulateSignIn();
-        } else {
+            // Set initial UI state immediately
             this.updateSignInStatus();
+
+            if (this.environment === 'local') {
+                await this.initializeMockService();
+                this.showUserInfo();
+            }
+        } catch (error) {
+            console.error('Failed to initialize app:', error);
+            this.showError('Failed to initialize application. Please refresh the page.');
         }
     }
 
@@ -185,11 +207,14 @@ class MeetingTimeFinder {
         ).join(' ');
     }
 
-    simulateSignIn() {
-        setTimeout(() => {
+    async simulateSignIn() {
+        if (this.mockService) {
+            const result = await this.mockService.simulateSignIn();
+            this.isSignedIn = result;
+        } else {
             this.isSignedIn = true;
-            this.updateSignInStatus();
-        }, 500);
+        }
+        this.updateSignInStatus();
     }
 
     signIn() {
@@ -220,8 +245,14 @@ class MeetingTimeFinder {
         const userInfo = document.getElementById('user-info');
 
         if (this.environment === 'local') {
-            userInfo.textContent = '👤 Demo User';
-            this.currentUserEmail = 'demo@example.com';
+            if (this.mockService) {
+                const mockUserInfo = this.mockService.getMockUserInfo();
+                userInfo.textContent = mockUserInfo.displayText;
+                this.currentUserEmail = mockUserInfo.email;
+            } else {
+                userInfo.textContent = '👤 Demo User';
+                this.currentUserEmail = 'demo@example.com';
+            }
         } else {
             google.script.run
                 .withSuccessHandler((userEmail) => {
@@ -329,121 +360,11 @@ class MeetingTimeFinder {
     }
 
     async findMeetingTimesLocal(formData) {
-        console.log('Finding meeting times with form data:', formData);
-        console.log('Mock data available:', window.mockCalendarData);
-
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        const results = this.generateMockResults(formData);
-        return results;
-    }
-
-    generateMockResults(formData) {
-        const slots = this.generateTimeSlots(formData);
-        const results = [];
-
-        for (const slot of slots) {
-            const availability = this.calculateMockAvailability(slot, formData.attendees, formData.slotLength);
-            results.push({
-                dateTime: slot,
-                availableCount: availability.available.length,
-                totalCount: formData.attendees.length,
-                percentage: Math.round((availability.available.length / formData.attendees.length) * 100),
-                unavailableAttendees: availability.unavailable
-            });
+        if (this.mockService) {
+            return await this.mockService.findMeetingTimes(formData);
+        } else {
+            throw new Error('Mock service not available');
         }
-
-        results.sort((a, b) => {
-            if (b.percentage !== a.percentage) {
-                return b.percentage - a.percentage;
-            }
-            return new Date(a.dateTime) - new Date(b.dateTime);
-        });
-
-        const finalResults = [];
-        const availabilityGroups = {
-            high: results.filter(r => r.percentage === 100),
-            medium: results.filter(r => r.percentage >= 50 && r.percentage !== 100),
-            low: results.filter(r => r.percentage < 50)
-        };
-
-        finalResults.push(...availabilityGroups.high.slice(0, 4));
-        finalResults.push(...availabilityGroups.medium.slice(0, 4));
-        finalResults.push(...availabilityGroups.low.slice(0, 2));
-
-        const targetLength = 10;
-        if (targetLength > finalResults.length) {
-            const remaining = results.filter(r => !finalResults.includes(r));
-            finalResults.push(...remaining.slice(0, targetLength - finalResults.length));
-        }
-
-        finalResults.sort((a, b) => {
-            if (b.percentage !== a.percentage) {
-                return b.percentage - a.percentage;
-            }
-            return new Date(a.dateTime) - new Date(b.dateTime);
-        });
-
-        return finalResults.slice(0, 10);
-    }
-
-    generateTimeSlots(formData) {
-        const slots = [];
-        const [startYear, startMonth, startDay] = formData.startDate.split('-').map(Number);
-        const startDate = new Date(startYear, startMonth - 1, startDay);
-        const [endYear, endMonth, endDay] = formData.endDate.split('-').map(Number);
-        const endDate = new Date(endYear, endMonth - 1, endDay);
-        const slotLengthMs = formData.slotLength * 60 * 1000;
-
-        for (let date = new Date(startDate); endDate.getTime() > date.getTime(); date.setDate(date.getDate() + 1)) {
-            const dayOfWeek = date.getDay();
-
-            if (dayOfWeek === 0 || dayOfWeek === 6) {
-                continue;
-            }
-
-            const dayStartTime = this.timeToMinutes(formData.startTime);
-            const dayEndTime = this.timeToMinutes(formData.endTime);
-
-            let minutes = dayStartTime;
-            while (minutes + formData.slotLength <= dayEndTime) {
-                const slotStart = new Date(date);
-                slotStart.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
-
-                const slotEnd = new Date(slotStart.getTime() + slotLengthMs);
-
-                if (slotEnd.getHours() * 60 + slotEnd.getMinutes() <= dayEndTime) {
-                    slots.push(slotStart);
-                }
-
-                minutes += 30;
-            }
-        }
-
-        return slots;
-    }
-
-    calculateMockAvailability(slotDateTime, attendees, slotLengthMinutes) {
-        const mockConflicts = window.mockCalendarData || {};
-        const available = [];
-        const unavailable = [];
-        const slotEnd = new Date(slotDateTime.getTime() + slotLengthMinutes * 60 * 1000);
-
-        for (const email of attendees) {
-            const conflicts = mockConflicts[email] || [];
-            const hasConflict = conflicts.some(conflict => {
-                const conflictStart = new Date(conflict.start);
-                const conflictEnd = new Date(conflict.end);
-                return conflictEnd.getTime() > slotDateTime.getTime() && slotEnd.getTime() > conflictStart.getTime();
-            });
-
-            if (hasConflict) {
-                unavailable.push(email);
-            } else {
-                available.push(email);
-            }
-        }
-        return { available, unavailable };
     }
 
     async findMeetingTimesGoogle(formData) {
@@ -615,6 +536,4 @@ class MeetingTimeFinder {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    new MeetingTimeFinder();
-});
+export default MeetingTimeFinder;
