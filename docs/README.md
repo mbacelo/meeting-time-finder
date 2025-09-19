@@ -1,6 +1,6 @@
 # Google Calendar Meeting Time Finder
 
-A modern web application that suggests optimal meeting times by checking attendees' Google Calendar availability. Built with ES6 modules and organized file structure.
+A web application that suggests optimal meeting times by checking attendees' Google Calendar availability.
 
 ## Features
 
@@ -16,10 +16,9 @@ A modern web application that suggests optimal meeting times by checking attende
 ```
 meeting-time-finder/
 ├── css/
-│   └── styles.css          # Stylesheet (separated from HTML)
+│   └── styles.css          # Stylesheet
 ├── js/
 │   ├── app.js              # Main application entry point
-│   ├── meetingTimeFinder.js # Core application class (ES6 module)
 │   └── mockData.js         # Sample calendar data for local testing
 ├── docs/
 │   ├── README.md           # This file
@@ -27,16 +26,3 @@ meeting-time-finder/
 ├── index.html              # User interface with modern responsive design
 └── code.gs                 # Google Apps Script backend code
 ```
-
-## Development
-
-**Local Development:**
-```bash
-# Start local server on port 8000
-python -m http.server 8000
-
-# Or alternatively
-npx serve .
-```
-
-**Note:** Uses ES6 modules - requires local server (not file:// protocol)
