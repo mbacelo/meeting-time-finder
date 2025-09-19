@@ -1,0 +1,252 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.header {
+    background: #4285f4;
+    color: white;
+    padding: 30px;
+    text-align: center;
+    position: relative;
+}
+
+.header h1 {
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.header p {
+    opacity: 0.9;
+}
+
+.user-info {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    backdrop-filter: blur(10px);
+}
+
+.form-section {
+    padding: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #4285f4;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.time-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+}
+
+.btn {
+    background: #4285f4;
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+}
+
+.btn:hover {
+    background: #3367d6;
+}
+
+.btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.auth-section {
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+}
+
+.results-section {
+    padding: 30px;
+    background: #f8f9fa;
+    border-top: 1px solid #e1e5e9;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.results-table th,
+.results-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.results-table th:nth-child(1),
+.results-table td:nth-child(1) {
+    width: 25%;
+    white-space: nowrap;
+}
+
+.results-table th:nth-child(2),
+.results-table td:nth-child(2) {
+    width: 20%;
+    text-align: center;
+}
+
+.results-table th:nth-child(3),
+.results-table td:nth-child(3) {
+    width: 15%;
+    text-align: center;
+}
+
+.results-table th:nth-child(4),
+.results-table td:nth-child(4) {
+    width: 40%;
+}
+
+.results-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+}
+
+.results-table th:hover {
+    background: #e9ecef;
+}
+
+.results-table th.sort-asc::after {
+    content: '\2191';
+    opacity: 1;
+}
+
+.results-table th.sort-desc::after {
+    content: '\2193';
+    opacity: 1;
+}
+
+.availability {
+    font-weight: bold;
+}
+
+.availability.high {
+    color: #34a853;
+}
+
+.availability.medium {
+    color: #fbbc04;
+}
+
+.availability.low {
+    color: #ea4335;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+}
+
+.spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #4285f4;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.hidden {
+    display: none;
+}
+
+.error {
+    background: #fee;
+    color: #c53030;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #feb2b2;
+}
+
+@media (max-width: 600px) {
+    .form-row,
+    .time-row {
+        grid-template-columns: 1fr;
+    }
+}

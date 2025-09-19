@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Time Finder</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div id="user-info" class="user-info hidden"></div>
+            <h1>Meeting Time Finder</h1>
+            <p>Find the best meeting times by checking attendees' Google Calendars</p>
+        </div>
+
+        <div id="auth-section" class="auth-section">
+            <p>Sign in with Google to access calendar data</p>
+            <br>
+            <button id="sign-in-btn" class="btn">Sign in with Google</button>
+        </div>
+
+        <div id="main-form" class="form-section hidden">
+            <div id="error-message" class="error hidden"></div>
+
+            <form id="meeting-form">
+                <div class="form-group">
+                    <label for="attendees">Attendees (separated by newlines or commas):</label>
+                    <textarea id="attendees" placeholder="john@example.com&#10;Jane Doe &lt;jane@example.com&gt;&#10;Bob Johnson &lt;bob@example.com&gt;, Alice Brown &lt;alice@example.com&gt;" required></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="start-date">Start Date:</label>
+                        <input type="date" id="start-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="days-forward">Days to Look Forward:</label>
+                        <input type="number" id="days-forward" min="1" max="30" value="5" required>
+                    </div>
+                </div>
+
+                <div class="time-row">
+                    <div class="form-group">
+                        <label for="start-time">Start Time:</label>
+                        <select id="start-time" required>
+                            <option value="09:00">9:00 AM</option>
+                            <option value="09:30">9:30 AM</option>
+                            <option value="10:00">10:00 AM</option>
+                            <option value="10:30">10:30 AM</option>
+                            <option value="11:00">11:00 AM</option>
+                            <option value="11:30">11:30 AM</option>
+                            <option value="12:00">12:00 PM</option>
+                            <option value="12:30">12:30 PM</option>
+                            <option value="13:00">1:00 PM</option>
+                            <option value="13:30">1:30 PM</option>
+                            <option value="14:00">2:00 PM</option>
+                            <option value="14:30">2:30 PM</option>
+                            <option value="15:00">3:00 PM</option>
+                            <option value="15:30">3:30 PM</option>
+                            <option value="16:00">4:00 PM</option>
+                            <option value="16:30">4:30 PM</option>
+                            <option value="17:00">5:00 PM</option>
+                            <option value="17:30">5:30 PM</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="end-time">End Time:</label>
+                        <select id="end-time" required>
+                            <option value="09:30">9:30 AM</option>
+                            <option value="10:00">10:00 AM</option>
+                            <option value="10:30">10:30 AM</option>
+                            <option value="11:00">11:00 AM</option>
+                            <option value="11:30">11:30 AM</option>
+                            <option value="12:00">12:00 PM</option>
+                            <option value="12:30">12:30 PM</option>
+                            <option value="13:00">1:00 PM</option>
+                            <option value="13:30">1:30 PM</option>
+                            <option value="14:00">2:00 PM</option>
+                            <option value="14:30">2:30 PM</option>
+                            <option value="15:00">3:00 PM</option>
+                            <option value="15:30">3:30 PM</option>
+                            <option value="16:00">4:00 PM</option>
+                            <option value="16:30">4:30 PM</option>
+                            <option value="17:00">5:00 PM</option>
+                            <option value="17:30">5:30 PM</option>
+                            <option value="18:00" selected>6:00 PM</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="slot-length">Meeting Duration:</label>
+                        <select id="slot-length" required>
+                            <option value="15">15 minutes</option>
+                            <option value="30" selected>30 minutes</option>
+                            <option value="60">1 hour</option>
+                            <option value="90">1.5 hours</option>
+                            <option value="120">2 hours</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">Find Meeting Times</button>
+            </form>
+        </div>
+
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Analyzing calendars and finding optimal meeting times...</p>
+        </div>
+
+        <div id="results" class="results-section hidden">
+            <h2>Suggested Meeting Times</h2>
+            <div id="results-content"></div>
+        </div>
+    </div>
+
+    <script src="js/mockData.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

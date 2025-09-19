@@ -8,7 +8,6 @@ class MeetingTimeFinder {
     }
 
     detectEnvironment() {
-        // Safe environment detection without comparison operators
         if (typeof google !== 'undefined' && google.script) {
             return 'gas';
         }
@@ -59,7 +58,6 @@ class MeetingTimeFinder {
     }
 
     updateEndTimeOptions() {
-        // Only needed for local environment
         if (this.environment !== 'local') return;
 
         const startTime = document.getElementById('start-time').value;
@@ -68,8 +66,7 @@ class MeetingTimeFinder {
 
         for (let option of endTimeSelect.options) {
             const endMinutes = this.timeToMinutes(option.value);
-            // Safe comparison using subtraction and negation
-            option.disabled = Math.sign(endMinutes - startMinutes) !== 1;
+            option.disabled = endMinutes <= startMinutes;
         }
 
         if (endTimeSelect.selectedOptions[0]?.disabled) {
@@ -90,9 +87,8 @@ class MeetingTimeFinder {
     minutesToTime(minutes) {
         const hours = Math.floor(minutes / 60);
         const mins = minutes % 60;
-        // Safe comparison using subtraction
-        const period = Math.sign(hours - 12) !== -1 ? 'PM' : 'AM';
-        const displayHours = Math.sign(hours - 12) === 1 ? hours - 12 : (hours === 0 ? 12 : hours);
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
         return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
     }
 
@@ -100,25 +96,18 @@ class MeetingTimeFinder {
         const attendees = [];
         const nameMapping = {};
 
-        // First split by newlines to handle multi-line input
         const lines = input.split(/\n+/).map(line => line.trim()).filter(line => line);
 
         for (const line of lines) {
-            // For each line, we need to carefully parse comma-separated entries
-            // while respecting that names can contain commas
             const entries = this.parseEmailLine(line);
 
             for (const entry of entries) {
-                console.log('🟢Entry:', entry);
-                // Check if format is "Name <email@domain.com>" using indexOf with character codes
-                const openBracket = entry.indexOf(String.fromCharCode(60)); // '<'
-                const closeBracket = entry.lastIndexOf(String.fromCharCode(62)); // '>'
+                const openBracket = entry.indexOf('<');
+                const closeBracket = entry.lastIndexOf('>');
 
-                if (Math.sign(openBracket) !== -1 && Math.sign(closeBracket) !== -1 && Math.sign(closeBracket - openBracket) === 1) {
+                if (openBracket >= 0 && closeBracket >= 0 && closeBracket > openBracket) {
                     const name = entry.substring(0, openBracket).trim();
                     const email = entry.substring(openBracket + 1, closeBracket).trim();
-
-                    console.log('🟢Name:' + name + ', Email:'+ email + ', IsValid:' + this.isValidEmail(email));
 
                     if (this.isValidEmail(email)) {
                         attendees.push(email);
@@ -127,8 +116,6 @@ class MeetingTimeFinder {
                         }
                     }
                 } else {
-                    console.log('🟢Just email:', entry);
-                    // Assume it's just an email
                     const email = entry.trim();
                     if (this.isValidEmail(email)) {
                         attendees.push(email);
@@ -137,7 +124,6 @@ class MeetingTimeFinder {
             }
         }
 
-        // Store the parsed names for display
         if (!window.parsedAttendeeNames) {
             window.parsedAttendeeNames = {};
         }
@@ -151,17 +137,16 @@ class MeetingTimeFinder {
         let current = '';
         let inBrackets = false;
 
-        for (let i = 0; Math.sign(i - line.length) === -1; i++) {
+        for (let i = 0; i < line.length; i++) {
             const char = line[i];
 
-            if (char === String.fromCharCode(60)) { // '<'
+            if (char === '<') {
                 inBrackets = true;
                 current += char;
-            } else if (char === String.fromCharCode(62)) { // '>'
+            } else if (char === '>') {
                 inBrackets = false;
                 current += char;
             } else if (char === ',' && !inBrackets) {
-                // Found a comma outside of angle brackets - this is a separator
                 const trimmed = current.trim();
                 if (trimmed) {
                     entries.push(trimmed);
@@ -172,7 +157,6 @@ class MeetingTimeFinder {
             }
         }
 
-        // Add the last entry
         const trimmed = current.trim();
         if (trimmed) {
             entries.push(trimmed);
@@ -187,23 +171,18 @@ class MeetingTimeFinder {
     }
 
     getAttendeeDisplayName(email) {
-        // Check if we have a parsed name from input
         if (window.parsedAttendeeNames && window.parsedAttendeeNames[email]) {
             return window.parsedAttendeeNames[email];
         }
 
-        // Check if we have a name mapping (for mock data)
         if (window.attendeeNames && window.attendeeNames[email]) {
             return window.attendeeNames[email];
         }
 
-        // Fallback: extract name from email
         const localPart = email.split('@')[0];
-        const name = localPart.split('.').map(part =>
+        return localPart.split('.').map(part =>
             part.charAt(0).toUpperCase() + part.slice(1)
         ).join(' ');
-
-        return name;
     }
 
     simulateSignIn() {
@@ -223,23 +202,26 @@ class MeetingTimeFinder {
     }
 
     updateSignInStatus() {
+        const authSection = document.getElementById('auth-section');
+        const mainForm = document.getElementById('main-form');
+
         if (this.isSignedIn) {
-            document.getElementById('auth-section').classList.add('hidden');
-            document.getElementById('main-form').classList.remove('hidden');
+            authSection.classList.add('hidden');
+            mainForm.classList.remove('hidden');
             this.showUserInfo();
         } else {
-            document.getElementById('auth-section').classList.remove('hidden');
-            document.getElementById('main-form').classList.add('hidden');
+            authSection.classList.remove('hidden');
+            mainForm.classList.add('hidden');
             this.hideUserInfo();
         }
     }
 
     showUserInfo() {
         const userInfo = document.getElementById('user-info');
+
         if (this.environment === 'local') {
             userInfo.textContent = '👤 Demo User';
         } else {
-            // Get user info from Google Apps Script server
             google.script.run
                 .withSuccessHandler((userEmail) => {
                     const userName = userEmail.split('@')[0];
@@ -282,18 +264,18 @@ class MeetingTimeFinder {
     }
 
     getFormData() {
-        const startDate = new Date(document.getElementById('start-date').value);
+        const startDateValue = document.getElementById('start-date').value;
+        const startDate = new Date(startDateValue);
         const daysForward = parseInt(document.getElementById('days-forward').value);
         const endDate = new Date(startDate);
-        // daysForward represents the number of days to include, so we add (daysForward - 1) to get the exclusive end date
         endDate.setDate(startDate.getDate() + daysForward);
 
         const attendeesInput = document.getElementById('attendees').value;
         const attendees = this.parseAttendees(attendeesInput);
 
         return {
-            attendees: attendees,
-            startDate: document.getElementById('start-date').value,
+            attendees,
+            startDate: startDateValue,
             endDate: endDate.toISOString().split('T')[0],
             startTime: document.getElementById('start-time').value,
             endTime: document.getElementById('end-time').value,
@@ -307,23 +289,20 @@ class MeetingTimeFinder {
             return false;
         }
 
-        // Validate start date is not in the past
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Reset time to start of day
+        today.setHours(0, 0, 0, 0);
 
-        // Parse date string as local date to avoid timezone issues
         const [year, month, day] = formData.startDate.split('-').map(Number);
-        const startDate = new Date(year, month - 1, day); // month is 0-indexed
+        const startDate = new Date(year, month - 1, day);
 
-        if (Math.sign(startDate.getTime() - today.getTime()) === -1) {
+        if (startDate.getTime() < today.getTime()) {
             this.showError('Start date must be today or in the future.');
             return false;
         }
 
-        // Safe time comparison using subtraction
         const startMinutes = this.timeToMinutes(formData.startTime);
         const endMinutes = this.timeToMinutes(formData.endTime);
-        if (Math.sign(endMinutes - startMinutes) !== 1) {
+        if (endMinutes <= startMinutes) {
             this.showError('End time must be after start time.');
             return false;
         }
@@ -371,27 +350,23 @@ class MeetingTimeFinder {
             return new Date(a.dateTime) - new Date(b.dateTime);
         });
 
-        // Show a mix of availability percentages for better demonstration
         const finalResults = [];
         const availabilityGroups = {
             high: results.filter(r => r.percentage === 100),
-            medium: results.filter(r => Math.sign(r.percentage - 50) !== -1 && r.percentage !== 100),
-            low: results.filter(r => Math.sign(r.percentage - 50) === -1)
+            medium: results.filter(r => r.percentage >= 50 && r.percentage !== 100),
+            low: results.filter(r => r.percentage < 50)
         };
 
-        // Take up to 4 from high availability, 4 from medium, 2 from low
         finalResults.push(...availabilityGroups.high.slice(0, 4));
         finalResults.push(...availabilityGroups.medium.slice(0, 4));
         finalResults.push(...availabilityGroups.low.slice(0, 2));
 
-        // If we don't have enough results, fill with remaining slots in order
         const targetLength = 10;
-        if (Math.sign(targetLength - finalResults.length) === 1) {
+        if (targetLength > finalResults.length) {
             const remaining = results.filter(r => !finalResults.includes(r));
             finalResults.push(...remaining.slice(0, targetLength - finalResults.length));
         }
 
-        // Sort the final results by availability percentage (desc) then chronologically
         finalResults.sort((a, b) => {
             if (b.percentage !== a.percentage) {
                 return b.percentage - a.percentage;
@@ -404,32 +379,30 @@ class MeetingTimeFinder {
 
     generateTimeSlots(formData) {
         const slots = [];
-        // Parse dates as local dates to avoid timezone issues
         const [startYear, startMonth, startDay] = formData.startDate.split('-').map(Number);
         const startDate = new Date(startYear, startMonth - 1, startDay);
         const [endYear, endMonth, endDay] = formData.endDate.split('-').map(Number);
         const endDate = new Date(endYear, endMonth - 1, endDay);
         const slotLengthMs = formData.slotLength * 60 * 1000;
 
-        // Iterate through each day in the range (exclusive of endDate)
-        for (let date = new Date(startDate); Math.sign(endDate.getTime() - date.getTime()) === 1; date.setDate(date.getDate() + 1)) {
+        for (let date = new Date(startDate); endDate.getTime() > date.getTime(); date.setDate(date.getDate() + 1)) {
             const dayOfWeek = date.getDay();
 
             if (dayOfWeek === 0 || dayOfWeek === 6) {
-                continue; // Skip weekends
+                continue;
             }
 
             const dayStartTime = this.timeToMinutes(formData.startTime);
             const dayEndTime = this.timeToMinutes(formData.endTime);
 
             let minutes = dayStartTime;
-            while (Math.sign(minutes + formData.slotLength - dayEndTime) !== 1) {
+            while (minutes + formData.slotLength <= dayEndTime) {
                 const slotStart = new Date(date);
                 slotStart.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
 
                 const slotEnd = new Date(slotStart.getTime() + slotLengthMs);
 
-                if (Math.sign(slotEnd.getHours() * 60 + slotEnd.getMinutes() - dayEndTime) !== 1) {
+                if (slotEnd.getHours() * 60 + slotEnd.getMinutes() <= dayEndTime) {
                     slots.push(slotStart);
                 }
 
@@ -444,17 +417,14 @@ class MeetingTimeFinder {
         const mockConflicts = window.mockCalendarData || {};
         const available = [];
         const unavailable = [];
+        const slotEnd = new Date(slotDateTime.getTime() + slotLengthMinutes * 60 * 1000);
 
         for (const email of attendees) {
             const conflicts = mockConflicts[email] || [];
-
             const hasConflict = conflicts.some(conflict => {
                 const conflictStart = new Date(conflict.start);
                 const conflictEnd = new Date(conflict.end);
-                const slotEnd = new Date(slotDateTime.getTime() + slotLengthMinutes * 60 * 1000);
-
-                // Safe comparison using getTime()
-                return Math.sign(conflictEnd.getTime() - slotDateTime.getTime()) === 1 && Math.sign(slotEnd.getTime() - conflictStart.getTime()) === 1;
+                return conflictEnd.getTime() > slotDateTime.getTime() && slotEnd.getTime() > conflictStart.getTime();
             });
 
             if (hasConflict) {
@@ -517,15 +487,14 @@ class MeetingTimeFinder {
                 const formattedDate = dateTime.toLocaleDateString();
                 const formattedTime = dateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-                // Safe comparison using subtraction
                 let availabilityClass = 'low';
-                if (Math.sign(result.percentage - 80) !== -1) {
+                if (result.percentage >= 80) {
                     availabilityClass = 'high';
-                } else if (Math.sign(result.percentage - 50) !== -1) {
+                } else if (result.percentage >= 50) {
                     availabilityClass = 'medium';
                 }
 
-                const unavailableList = result.unavailableAttendees && Math.sign(result.unavailableAttendees.length) === 1 ?
+                const unavailableList = result.unavailableAttendees && result.unavailableAttendees.length > 0 ?
                                       result.unavailableAttendees.map(email => this.getAttendeeDisplayName(email)).join(', ') : 'None';
 
                 html += `
@@ -573,7 +542,6 @@ class MeetingTimeFinder {
     }
 
     sortResults(column) {
-        // Toggle sort direction if clicking the same column
         if (this.sortState.column === column) {
             this.sortState.direction = this.sortState.direction === 'asc' ? 'desc' : 'asc';
         } else {
@@ -581,7 +549,6 @@ class MeetingTimeFinder {
             this.sortState.direction = 'asc';
         }
 
-        // Sort the results
         const sortedResults = [...this.currentResults].sort((a, b) => {
             let valueA, valueB;
 
@@ -607,16 +574,15 @@ class MeetingTimeFinder {
             }
 
             let comparison = 0;
-            if (Math.sign(valueA - valueB) === 1) {
+            if (valueA > valueB) {
                 comparison = 1;
-            } else if (Math.sign(valueA - valueB) === -1) {
+            } else if (valueA < valueB) {
                 comparison = -1;
             }
 
             return this.sortState.direction === 'desc' ? -comparison : comparison;
         });
 
-        // Update the table
         const resultsContent = document.getElementById('results-content');
         const tableHTML = this.generateResultsTable(sortedResults);
         resultsContent.innerHTML = tableHTML;
@@ -625,13 +591,11 @@ class MeetingTimeFinder {
     }
 
     updateSortingIndicators() {
-        // Remove all sorting classes
         const headers = document.querySelectorAll('.results-table th.sortable');
         headers.forEach(header => {
             header.classList.remove('sort-asc', 'sort-desc');
         });
 
-        // Add class to current sorted column
         if (this.sortState.column) {
             const currentHeader = document.querySelector(`[data-column="${this.sortState.column}"]`);
             if (currentHeader) {

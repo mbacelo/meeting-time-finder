@@ -1,0 +1,43 @@
+Goal: Build a web app that suggests meeting times by checking attendees’ Google Calendars.
+
+Inputs
+ * Attendees: list of email addresses. There can be several addresses, so allow to enter multiple lines.
+ * Date range: start date and end date, inclusive.   
+ * Daily time window: e.g., 09:00 to 17:00.   
+ ** Allow only selection from 9 AM to 6 PM, in interval of 30 minutes.
+ * Slot length: e.g., 30 minutes.
+ ** Allow only 4 options: 15 minutes, 30 minutes, 1 hour, 1.5 hours, and 2 hours. Default to 30 minutes.
+ * Time zone: use browser time zone (use internally to get calendar availability but do not display to the user).
+    
+Behavior
+* Authenticate users with Google Sign In and request Calendar read scope. Users can use their own Google accounts.
+* For each potential slot within the date range and daily window, determine availability of all attendees using their primary calendars.
+* Compute availability percentage for each slot as (availableAttendees / totalAttendees)* 100.
+* Rank results by: availability percentage descending, then date and time ascending
+* Returns 10 results or fewer if fewer valid slots exist.
+* Handle private or busy blocks as unavailable.
+
+Output a table with columns:    
+* Date and time of slot
+* Available attendees (e.g., 3 of 5)
+* Availability percentage 
+* Unavailable attendees listed by email
+
+Constraints and assumptions
+* Only readon-only access is needed. Do not create or modify calendar events.    
+* Consider only working hours defined by the daily time window, regardless of attendees’ personal working hours.
+* All times are shown in the selected time zone.
+* If two or more slots tie on availability, use chronological order.
+* Use Google script to create the app, to avoid complex authentication flows.
+* No need to store any information (except keeping the user logged in).
+* You can reference simple libraries for styling, date parsing, etc., but avoid using complex frameworks (e.g., React, Next.js). UI should look modern.
+* I would like to be able to test the application locally, so create a single mockup to simulate the google script backend, when the application runs locally. 
+** Same code should run no matter where the application is deployed (locally or Google Script). There should be logic in the app to decide to use the mockup date if running locally.
+** Mocked data should contain some calendar conflicts for the default inputs and sample emails, so the top results displayed include some cases with full availability and others with partial availability (availability percentage lower than  100%).
+* Files structure should be:
+** index.html for UI
+** app.js for application logic
+** mockData.js for mocked data, to be used when run locally
+** code.gs for Google Script code
+
+If you need any key clarification, ask for it, if not, assume and proceed.
