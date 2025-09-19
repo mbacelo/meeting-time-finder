@@ -53,29 +53,6 @@ The app automatically detects where it's running:
 2. Click **"+" > "HTML"**, name it `app` → Paste `js/meetingTimeFinder.js` content
 3. Click **"+" > "HTML"**, name it `styles` → Paste `css/styles.css` content
 
-### **Step 3: Modify index.html for Deployment**
-
-In your **index.html** file, replace the local development script/style tags:
-
-**From:**
-```html
-<link rel="stylesheet" href="css/styles.css">
-<script src="js/mockData.js"></script>
-<script type="module" src="js/app.js"></script>
-```
-
-**To:**
-```html
-<style>
-  <?!= include('styles'); ?>
-</style>
-<script>
-  <?!= include('app'); ?>
-  document.addEventListener('DOMContentLoaded', () => {
-    new MeetingTimeFinder();
-  });
-</script>
-```
 
 ### **Step 4: Enable Google Calendar API**
 1. Click **"Services"** (+ icon) in the left sidebar

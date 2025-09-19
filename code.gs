@@ -2,13 +2,9 @@ function doGet() {
   return HtmlService.createTemplateFromFile('index')
     .evaluate()
     .setTitle('Meeting Time Finder')
+    .setFaviconUrl('https://mbacelo.github.io/meeting-time-finder/favicon.ico')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
-
-function include(filename) {
-  return HtmlService.createHtmlOutputFromFile(filename).getContent();
-}
-
 
 function findMeetingTimes(formData) {
   try {
@@ -182,46 +178,7 @@ function timeStringToMinutes(timeString) {
   return hours * 60 + minutes;
 }
 
-// Helper function to test the calendar API access
-function testCalendarAccess() {
-  try {
-    const testEmail = Session.getActiveUser().getEmail();
-    Logger.log('Testing calendar access for: ' + testEmail);
-
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const freeBusyRequest = {
-      timeMin: today.toISOString(),
-      timeMax: tomorrow.toISOString(),
-      items: [{ id: testEmail }]
-    };
-
-    const response = Calendar.Freebusy.query(freeBusyRequest);
-    Logger.log('Test successful. Response: ' + JSON.stringify(response));
-
-    return 'Calendar API access is working correctly.';
-
-  } catch (error) {
-    Logger.log('Calendar API test failed: ' + error.toString());
-    return 'Calendar API test failed: ' + error.message;
-  }
-}
-
 // Helper function to get the current user's email
 function getCurrentUserEmail() {
   return Session.getActiveUser().getEmail();
-}
-
-// Function to handle errors gracefully
-function handleError(error, context) {
-  Logger.log('Error in ' + context + ': ' + error.toString());
-
-  // Return a user-friendly error message
-  return {
-    error: true,
-    message: 'An error occurred while processing your request. Please try again or contact support.',
-    details: error.message
-  };
 }
